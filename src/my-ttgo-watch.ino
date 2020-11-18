@@ -46,7 +46,7 @@
 #include "app/stopwatch/stopwatch_app.h"
 #include "app/alarm_clock/alarm_clock.h"
 #include "app/crypto_ticker/crypto_ticker.h"
-#include "app/example_app/example_app.h"
+#include "app/dandd_roller/dandd_roller_app.h"
 #include "app/osmand/osmand_app.h"
 #include "app/IRController/IRController.h"
 #include "app/powermeter/powermeter_app.h"
@@ -56,8 +56,8 @@ TTGOClass *ttgo = TTGOClass::getWatch();
 void setup()
 {
     Serial.begin(115200);
-    Serial.printf("starting t-watch V1, version: " __FIRMWARE__ " core: %d\r\n", xPortGetCoreID() );
-    Serial.printf("Configure watchdog to 30s: %d\r\n", esp_task_wdt_init( 30, true ) );
+    Serial.printf("starting t-watch V1, version: " __FIRMWARE__ " core: %d\r\n", xPortGetCoreID());
+    Serial.printf("Configure watchdog to 30s: %d\r\n", esp_task_wdt_init(30, true));
 
     ttgo->begin();
     ttgo->lvgl_begin();
@@ -66,32 +66,34 @@ void setup()
     motor_setup();
 
     // force to store all new heap allocations in psram to get more internal ram
-    heap_caps_malloc_extmem_enable( 1 );
+    heap_caps_malloc_extmem_enable(1);
     display_setup();
     screenshot_setup();
 
     splash_screen_stage_one();
-    splash_screen_stage_update( "init serial", 10 );
+    splash_screen_stage_update("init serial", 10);
 
-    splash_screen_stage_update( "init spiff", 20 );
-    if ( !SPIFFS.begin() ) {
-        splash_screen_stage_update( "format spiff", 30 );
+    splash_screen_stage_update("init spiff", 20);
+    if (!SPIFFS.begin())
+    {
+        splash_screen_stage_update("format spiff", 30);
         SPIFFS.format();
-        splash_screen_stage_update( "format spiff done", 40 );
+        splash_screen_stage_update("format spiff done", 40);
         delay(500);
         bool remount_attempt = SPIFFS.begin();
-        if (!remount_attempt){
-            splash_screen_stage_update( "Err: SPIFF Failed", 0 );
+        if (!remount_attempt)
+        {
+            splash_screen_stage_update("Err: SPIFF Failed", 0);
             delay(3000);
             ESP.restart();
         }
     }
 
-    splash_screen_stage_update( "init powermgm", 60 );
+    splash_screen_stage_update("init powermgm", 60);
     powermgm_setup();
-    splash_screen_stage_update( "init gui", 80 );
+    splash_screen_stage_update("init gui", 80);
     splash_screen_stage_finish();
-    
+
     gui_setup();
 
     /*
@@ -101,22 +103,22 @@ void setup()
     stopwatch_app_setup();
     alarm_clock_setup();
     crypto_ticker_setup();
-    example_app_setup();
+    dandd_roller_app_setup();
     osmand_app_setup();
     IRController_setup();
     powermeter_app_setup();
     /*
      *
      */
-    if ( wifictl_get_autoon() && ( pmu_is_charging() || pmu_is_vbus_plug() || ( pmu_get_battery_voltage() > 3400) ) )
+    if (wifictl_get_autoon() && (pmu_is_charging() || pmu_is_vbus_plug() || (pmu_get_battery_voltage() > 3400)))
         wifictl_on();
 
     // enable to store data in normal heap
-    heap_caps_malloc_extmem_enable( 16*1024 );
+    heap_caps_malloc_extmem_enable(16 * 1024);
     blectl_setup();
     sound_setup();
 
-    display_set_brightness( display_get_brightness() );
+    display_set_brightness(display_get_brightness());
 
     delay(500);
 
@@ -129,6 +131,7 @@ void setup()
     callback_print();
 }
 
-void loop() {
+void loop()
+{
     powermgm_loop();
 }
